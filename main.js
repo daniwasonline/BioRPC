@@ -18,6 +18,7 @@ var rpc = require("discord-rich-presence")("623327828875935744")
 const { promisify } = require('util')
 const sleep = promisify(setTimeout)
 const sudoer = require('is-elevated')
+let appIcon = null
 console.log("Start File: " + require.main.filename)
 console.log("Home Directory: " + app.getPath("home"))
 
@@ -87,6 +88,7 @@ async function onboarding() {
 
 
 app.on('ready', async () => {
+    let appIcon = new Tray(iconpath)
     if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
         if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
         fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
@@ -118,10 +120,6 @@ app.on('ready', async () => {
     if (sudoer() == true) return dialogs.err("BioRPC can't run with sudoer [administrator/elevated] privileges. Try again without using administrator privileges.", "BioRPC", function (exitCode) {
         if (exitCode == 0) return app.quit()
     })
-
-
-
-    var appIcon = new Tray(iconpath)
 
 
 
