@@ -1,0 +1,51 @@
+{
+  "name": "biorpc",
+  "version": "2.0.0",
+  "description": "A Rich Presence creator for Discord. Meant to be used with dsc.bio.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Unicord",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BeanedTaco/BioRPC.git"
+  },
+  "contributors": ["SaturdayNightDead"],
+  "license": "MIT",
+  "dependencies": {
+    "discord-rich-presence": "0.0.8",
+    "dialog": "^0.3.1",
+    "js-yaml": "^3.14.0",
+    "is-elevated": "^3.0.0",
+    "auto-launch": "^5.0.5"
+  },
+  "devDependencies": {
+    "electron": "^8.0.1",
+    "electron-builder": "^22.4.1",
+    "electron-packager": "^14.2.1"
+  },
+  "build": {
+    "appId": "com.unicord.biorpc",
+    "productName": "BioRPC",
+    "asar": false,
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "include": "build/installer.nsh",
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "license": "license.txt",
+      "language": "2057",
+      "shortcutName": "BioRPC",
+      "menuCategory": "Unicord"
+    }
+  }
+}
