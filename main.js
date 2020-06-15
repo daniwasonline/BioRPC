@@ -243,6 +243,10 @@ app.on('ready', async () => {
                     initTheReInit()
 
             }},
+            { label: 'Onboarding', click: function () {
+                onboarding()
+
+            }},
             { label: 'Edit Config', click: function () {
                 app.isQuiting = false;
                 shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
