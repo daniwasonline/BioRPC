@@ -18,7 +18,7 @@ var rpc = require("discord-rich-presence")("623327828875935744")
 const { promisify } = require('util')
 const sleep = promisify(setTimeout)
 const sudoer = require('is-elevated')
-let appIcon = null
+var appIcon = null
 console.log("Start File: " + require.main.filename)
 console.log("Home Directory: " + app.getPath("home"))
 
@@ -88,7 +88,6 @@ async function onboarding() {
 
 
 app.on('ready', async () => {
-    let appIcon = new Tray(iconpath)
     if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
         if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
         fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
@@ -226,47 +225,75 @@ app.on('ready', async () => {
             }
         }
 
+        async function tray() {
+            var contextMenu = Menu.buildFromTemplate([
+                {
+                    label: "BioRPC Control Centre", enabled: false
+                },
+                {
+                    label: "Separator", type: "separator"
+                },
+                {
+                    label: 'Reconnect Status', click: function () {
+                        app.isQuiting = false;
+                        initTheReInit()
 
-        var contextMenu = Menu.buildFromTemplate([
-            {
-            label: "BioRPC Control Centre", enabled: false
-            },
-            {
-            label: "Separator", type: "separator"
-            },
-            {
-            label: 'Reconnect Status', click: function () {
-                    app.isQuiting = false;
-                    initTheReInit()
+                    }
+                },
+                {
+                    label: 'Onboarding', click: function () {
+                        onboarding()
+                    }
+                },
+                {
+                    label: 'Edit Config', click: function () {
+                        app.isQuiting = false;
+                        shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
 
-            }},
-            { label: 'Onboarding', click: function () {
-                onboarding()
+                    }
+                },
+                {
+                    label: "Separator", type: "separator"
+                },
+                {
+                    label: "Documentation", click: function () {
+                        shell.openExternal("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
-            }},
-            { label: 'Edit Config', click: function () {
-                app.isQuiting = false;
-                shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
+                    }
+                },
+                {
+                    label: await StartFunctions("name"), click: function () {
+                        StartFunctions("toggle")
 
-            }},
-            {
-            label: "Separator", type: "separator"
-            },
-            {
-                label: await StartFunctions("name"), click: function () {
-                    StartFunctions("toggle")
+                    }
+                },
+                {
+                    label: 'Quit', click: function () {
+                        app.isQuiting = true;
+                        app.quit();
+                        process.exit()
+                    }
+                },
+            ]);
+            var appIcon = null
+            var appIcon = new Tray(iconpath)
+            appIcon.setContextMenu(contextMenu)
+            appIcon.setToolTip("BioRPC")
+            appIcon.setTitle("BioRPC Control Panel")
+        }
 
-            }},
-            { label: 'Quit', click:  function(){
-                app.isQuiting = true;
-                app.quit();
-                process.exit()
-            }},
-        ]);
-        appIcon.setContextMenu(contextMenu)
-        appIcon.setToolTip("BioRPC")
+        tray()
+
+        setInterval(async function () {
+            if (appIcon.isDestroyed() == true) {
+                if (appIcon == new Tray(iconpath)) await appIcon.destroy()
+                tray()
+            }
+        }, 10000)
+
+
+
         init()
-        appIcon.setTitle("BioRPC Control Panel")
     }
 
 
