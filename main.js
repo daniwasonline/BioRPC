@@ -227,7 +227,6 @@ app.on('ready', async () => {
                 console.log(`Error: ${e}`)
             }
         }
-        init()
 
 
         var contextMenu = Menu.buildFromTemplate([
@@ -268,6 +267,7 @@ app.on('ready', async () => {
         ]);
         appIcon.setContextMenu(contextMenu)
         appIcon.setToolTip("BioRPC")
+        init()
         appIcon.setTitle("BioRPC Control Panel")
     }
 
