@@ -52,11 +52,6 @@ function initTheReInit() {
     initReInit()
 }
 
-//require('v8-compile-cache');
-if (!os.platform == "win32") return dialogs.err("Oops! You're not using Windows. This program is designed for the Windows platform, and WILL NOT work on Linux or MacOS. Press OK to exit.", "BioRPC", function (exitCode) {
-    if (exitCode == 0) return app.quit()
-})
-
 async function onboarding() {
     dialogs.info("Thanks for using BioRPC! We assume you've already created a dsc.bio, but if you haven't, head over to dsc.bio and create a bio before coming back here.\n\n To start the guide, press OK to continue.", "BioRPC Onboarding", function (exitCode) {
         if (exitCode == 0) {
@@ -64,7 +59,7 @@ async function onboarding() {
                 if (exitCode == 0) {
                     async function execShell() {
                         await sleep(1000)
-                        await shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
+                        await shell.openExternal(app.getPath("home") + "/.biorpc//biorpc.yml")
                     }
                     execShell()
                     dialogs.info("Now, customize this file to your liking. Once you're done, click File, then click Save [or press Ctrl+S]. Press OK once you've done that.", "BioRPC Onboarding", function (exitCode) {
@@ -88,14 +83,14 @@ async function onboarding() {
 
 
 app.on('ready', async () => {
-    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
-        if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
-        fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
+    if (!fs.existsSync(app.getPath("home") + "/.biorpc/autolaunch.yml")) {
+        if (!fs.existsSync(app.getPath("home") + "/.biorpc/")) fs.mkdirSync(app.getPath("home") + "/.biorpc/")
+        fs.writeFile(app.getPath("home") + '/.biorpc/autolaunch.yml', 'enabled: false', function (e) {
         })
     }
 
-    if (fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
-        const autolaunch_config = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
+    if (fs.existsSync(app.getPath("home") + "/.biorpc/autolaunch.yml")) {
+        const autolaunch_config = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "/.biorpc/" + "autolaunch.yml"))
         if (autolaunch_config.enabled == false) {
             Startup.isEnabled().then(function (isEnabled) {
                 console.log("Startup: Disabled")
@@ -122,11 +117,11 @@ app.on('ready', async () => {
 
 
 
-    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\biorpc.yml")) {
+    if (!fs.existsSync(app.getPath("home") + "/.biorpc/biorpc.yml")) {
         console.log("uhh")
-        if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
+        if (!fs.existsSync(app.getPath("home") + "/.biorpc/")) fs.mkdirSync(app.getPath("home") + "/.biorpc/")
         sleep(5)
-        fs.writeFile(app.getPath("home") + '\\.biorpc\\biorpc.yml', 'details: Online\nbioUser: BIO CUSTOM USERNAME HERE # Example: Adding dannykun here would make the status "Bio: dsc.bio/dannykun".\nlargeImage: sad_box\nsmallImage: jords_eye', function (e) {
+        fs.writeFile(app.getPath("home") + '/.biorpc/biorpc.yml', 'details: Online\nbioUser: BIO CUSTOM USERNAME HERE # Example: Adding dannykun here would make the status "Bio: dsc.bio/dannykun".\nlargeImage: sad_box\nsmallImage: jords_eye', function (e) {
             if (e) console.log("ERR: " + e)
             onboarding()
         })
@@ -136,8 +131,8 @@ app.on('ready', async () => {
         
         return;
         
-    } else if (fs.existsSync(app.getPath("home") + "\\.biorpc\\biorpc.yml")) {
-        const settings = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "biorpc.yml"))
+    } else if (fs.existsSync(app.getPath("home") + "/.biorpc/biorpc.yml")) {
+        const settings = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "/.biorpc/" + "biorpc.yml"))
 
         async function checkForLarge() {
             var myArgs = process.argv.slice(3)
@@ -183,19 +178,19 @@ app.on('ready', async () => {
         
 
         async function StartFunctions(opt) {
-            const launchConf = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
+            const launchConf = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "/.biorpc/" + "autolaunch.yml"))
             if (opt == "name") {
                 if (launchConf.enabled == false) return "Enable Launch on Startup"
                 if (launchConf.enabled == true) return "Disable Launch on Startup"
             } else if (opt == "toggle") {
                 if (launchConf.enabled == false) {
-                    fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: true', function (e) {
+                    fs.writeFile(app.getPath("home") + '/.biorpc/autolaunch.yml', 'enabled: true', function (e) {
                     })
                     initTheReInit()
 
                 }
                 if (launchConf.enabled == true) {
-                    fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
+                    fs.writeFile(app.getPath("home") + '/.biorpc/autolaunch.yml', 'enabled: false', function (e) {
                     })
                     initTheReInit()
                 }
@@ -248,7 +243,7 @@ app.on('ready', async () => {
                 {
                     label: 'Edit Config', click: function () {
                         app.isQuiting = false;
-                        shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
+                        shell.openExternal(app.getPath("home") + "/.biorpc/biorpc.yml")
 
                     }
                 },
