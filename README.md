@@ -2,4 +2,4 @@
 An RPC for dsc.bio, made in Node.
 
 ## Warning
-Fair warning, this __SHOULD NOT__ be used on any OS besides Windows, ***NOR*** should it be run with vanilla Node. BioRPC was designed to be used on Win32 and in a _binary built with pkg_. If you know how to make this multi-platformed and make BioRPC support plain Node instead of a Node pkg binary, please make a PR with the changes! Thank you!
+Fair warning, it is __HIGHLY RECOMMENDED__ to NOT be used on any platform besides Windows. The paths and everything are designed for the Windows platform, and it is hard to port such an application to macOS/Linux anyway.
