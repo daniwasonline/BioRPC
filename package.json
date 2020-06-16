@@ -1,6 +1,6 @@
 {
   "name": "biorpc",
-  "version": "2.2.0-b1",
+  "version": "2.2.0",
   "description": "A Rich Presence creator for Discord. Meant to be used with dsc.bio.",
   "main": "main.js",
   "scripts": {

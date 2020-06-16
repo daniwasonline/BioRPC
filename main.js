@@ -257,7 +257,7 @@ app.on('ready', async () => {
                 },
                 {
                     label: "Documentation", click: function () {
-                        shell.openExternal("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+                        shell.openExternal("https://github.com/BeanedTaco/BioRPC/wiki")
 
                     }
                 },
@@ -285,6 +285,7 @@ app.on('ready', async () => {
         tray()
 
         setInterval(async function () {
+            if (appIcon == null) return;
             if (appIcon.isDestroyed() == true) {
                 if (appIcon == new Tray(iconpath)) await appIcon.destroy()
                 tray()
