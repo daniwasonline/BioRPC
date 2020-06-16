@@ -280,16 +280,29 @@ app.on('ready', async () => {
         tray()
 
         setInterval(async function () {
-            if (appIcon == null) return;
-            if (appIcon.isDestroyed() == true) {
-                if (appIcon == new Tray(iconpath)) await appIcon.destroy()
-                tray()
+            console.log("running check")
+            if (appIcon == null) {
+                console.log("null")
+                return initTheReInit()
             }
-        }, 10000)
+            else if (appIcon.isDestroyed()) {
+                console.log("destroyed")
+                sleep(10000).then(e => {
+                    tray()
+                })
+            } else {
+                console.log("nothing")
+                return;
+            }
+        }, 10800000)
 
 
 
-        init()
+        try {
+            init()
+        } catch (e) {
+            console.log("Nope! Couldn't connect.")
+        }
     }
 
 
