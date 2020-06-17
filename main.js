@@ -18,7 +18,7 @@ var rpc = require("discord-rich-presence")("623327828875935744")
 const { promisify } = require('util')
 const sleep = promisify(setTimeout)
 const sudoer = require('is-elevated')
-var appIcon = null
+let appIcon = null
 console.log("Start File: " + require.main.filename)
 console.log("Home Directory: " + app.getPath("home"))
 
@@ -276,15 +276,15 @@ app.on('ready', async () => {
                     }
                 },
             ]);
-            var appIcon = null
-            var appIcon = new Tray(iconpath)
+            appIcon = null
+            appIcon = new Tray(iconpath)
             appIcon.setContextMenu(contextMenu)
             appIcon.setToolTip("BioRPC")
             appIcon.setTitle("BioRPC Control Panel")
         }
 
         tray()
-
+/*
         setInterval(async function () {
             console.log("running check")
             if (appIcon == null) {
@@ -301,6 +301,7 @@ app.on('ready', async () => {
                 return;
             }
         }, 10800000)
+*/
 
         try {
             init()
