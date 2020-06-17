@@ -151,6 +151,7 @@ app.on('ready', async () => {
         async function checkForBio() {
             var myArgs = process.argv.slice(5)
             if (settings.bioUser == "BIO CUSTOM USERNAME HERE") return `No dsc.bio user entered`
+            if (settings.bioUser.startsWith("csurl://")) return settings.bioUser.replace("csurl://", "")
             if (settings.bioUser) return `Bio: dsc.bio/${settings.bioUser}`
         }
         
