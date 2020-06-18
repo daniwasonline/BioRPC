@@ -10,16 +10,22 @@
 const { app, BrowserWindow, BrowserView, globalShortcut, Menu, screen, MenuItem, ipcMain, Tray, shell } = require('electron')
 const os = require('os') 
 const RPC = require("discord-rpc")
-const client = new RPC.Client({ transport: 'ipc' });
+const { promisify } = require('util')
+const sleep = promisify(setTimeout)
+const find = require("find-process")
 const dialogs = require("dialog")
 const dialog = require("dialog")
+
+const client = new RPC.Client({ transport: 'ipc' });
+
+
+
+
 const fs = require("fs")
 const bio = new (require('discord.bio').Bio)
 const yml = require('js-yaml')
 const AutoLaunch = require("auto-launch")
 const clientId = "623327828875935744"
-const { promisify } = require('util')
-const sleep = promisify(setTimeout)
 const sudoer = require('is-elevated')
 let appIcon = null
 console.log("Start File: " + require.main.filename)
@@ -45,21 +51,26 @@ async function reInit() {
 }
 
 
+
 async function initReInit() {
     app.quit()
 }
 
 async function initTheReInit() {
-    await client.destroy()
+    try {
+        await client.destroy()
+    } catch (e) {
+        console.log("Error! Client can't be destroyed.")
+        reInit()
+        sleep(500)
+        return initReInit()
+    }
     reInit()
     sleep(500)
     initReInit()
 }
 
 //require('v8-compile-cache');
-if (!os.platform == "win32") return dialogs.err("Oops! You're not using Windows. This program is designed for the Windows platform, and WILL NOT work on Linux or MacOS. Press OK to exit.", "BioRPC", function (exitCode) {
-    if (exitCode == 0) return app.quit()
-})
 
 async function onboarding() {
     dialogs.info("Thanks for using BioRPC! We assume you've already created a dsc.bio, but if you haven't, head over to dsc.bio and create a bio before coming back here.\n\n To start the guide, press OK to continue.", "BioRPC Onboarding", function (exitCode) {
@@ -206,12 +217,14 @@ if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
             if (launchConf.enabled == false) {
                 fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: true', function (e) {
                 })
+                await client.destroy()
                 initTheReInit()
 
             }
             if (launchConf.enabled == true) {
                 fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
                 })
+                await client.destroy()
                 initTheReInit()
             }
         }
@@ -240,13 +253,24 @@ if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
         }
     }
 
+    async function checkApp() {
+        if (await find('name', "Discord.exe") == []) return "BioRPC Control Centre"
+        if (!await find('name', "Discord.exe") == []) return "[DISCONNECTED] BioRPC"
+        if (await find('name', "DiscordCanary.exe") == []) return "BioRPC Control Centre"
+        if (!await find('name', "DiscordCanary.exe") == []) return "[DISCONNECTED] BioRPC"
+        if (await find('name', "DiscordPTB.exe") == []) return "BioRPC Control Centre"
+        if (!await find('name', "DiscordPTB.exe") == []) return "[DISCONNECTED] BioRPC"
+    }
 
     app.on('ready', async () => {
+        if (!os.platform == "win32") return dialogs.err("Oops! You're not using Windows. This program is designed for the Windows platform, and WILL NOT work on Linux or MacOS. Press OK to exit.", "BioRPC", function (exitCode) {
+            if (exitCode == 0) return app.quit()
+        })
 
         async function tray() {
             var contextMenu = Menu.buildFromTemplate([
                 {
-                    label: "BioRPC Control Centre", enabled: false
+                    label: await checkApp(), enabled: false
                 },
                 {
                     label: "Separator", type: "separator"
@@ -322,14 +346,139 @@ if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
                     }
                 }, 10800000)
         */
-    const ready = async function () {
-        init();
-    }
+        const ready = async function () {
+
+                init();
+            
+        }
 //await yml.safeLoad(
-    client.on('ready', ready)
+        try {
+            client.on('ready', ready)
+        }catch(e){
+            console.log("Oop! Discord's not open. Retrying in 15 seconds..")
+            return sleep(1000).then(e => {
+                console.log("15")
+                sleep(1000).then(e => {
+                    console.log("14")
+                    sleep(1000).then(e => {
+                        console.log("13")
+                        sleep(1000).then(e => {
+                            console.log("12")
+                            sleep(1000).then(e => {
+                                console.log("11")
+                                sleep(1000).then(e => {
+                                    console.log("10")
+                                    sleep(1000).then(e => {
+                                        console.log("9")
+                                        sleep(1000).then(e => {
+                                            console.log("8")
+                                            sleep(1000).then(e => {
+                                                console.log("7")
+                                                sleep(1000).then(e => {
+                                                    console.log("6")
+                                                    sleep(1000).then(e => {
+                                                        console.log("5")
+                                                        sleep(1000).then(e => {
+                                                            console.log("4")
+                                                            sleep(1000).then(e => {
+                                                                console.log("3")
+                                                                sleep(1000).then(e => {
+                                                                    console.log("2")
+                                                                    sleep(1000).then(e => {
+                                                                        console.log("1")
+                                                                        sleep(1000).then(e => {
+                                                                            console.log("Restarting..")
+                                                                            initTheReInit()
+                                                                        })
+                                                                    })
+                                                                })
+                                                            })
+                                                        })
+                                                    })
+                                                })
+                                            })
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            })
+        }
+
+
+        if (!await find('name', "Discord.exe") == []) {
+            if (!await find('name', "DiscordCanary.exe") == []) {
+                if (!await find('name', "DiscordPTB.exe") == []) {
+                    console.log("Oop! Discord's not open. Retrying in 15 seconds..")
+                    return sleep(1000).then(e => {
+                        console.log("15")
+                        sleep(1000).then(e => {
+                            console.log("14")
+                            sleep(1000).then(e => {
+                                console.log("13")
+                                sleep(1000).then(e => {
+                                    console.log("12")
+                                    sleep(1000).then(e => {
+                                        console.log("11")
+                                        sleep(1000).then(e => {
+                                            console.log("10")
+                                            sleep(1000).then(e => {
+                                                console.log("9")
+                                                sleep(1000).then(e => {
+                                                    console.log("8")
+                                                    sleep(1000).then(e => {
+                                                        console.log("7")
+                                                        sleep(1000).then(e => {
+                                                            console.log("6")
+                                                            sleep(1000).then(e => {
+                                                                console.log("5")
+                                                                sleep(1000).then(e => {
+                                                                    console.log("4")
+                                                                    sleep(1000).then(e => {
+                                                                        console.log("3")
+                                                                        sleep(1000).then(e => {
+                                                                            console.log("2")
+                                                                            sleep(1000).then(e => {
+                                                                                console.log("1")
+                                                                                sleep(1000).then(e => {
+                                                                                    console.log("Restarting..")
+                                                                                    initTheReInit()
+                                                                                })
+                                                                            })
+                                                                        })
+                                                                    })
+                                                                })
+                                                            })
+                                                        })
+                                                    })
+                                                })
+                                            })
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    })
+                }
+            }
+        }
+
+        
 });
 
+    
+
 client.login({ clientId }).catch(console.error);
+setInterval(async function () {
+    if (!await find('name', "Discord.exe") == []) return initTheReInit()
+    else if (!await find('name', "DiscordPTB.exe") == []) return initTheReInit()
+    else if (!await find('name', "DiscordCanary.exe") == []) return initTheReInit()
+    else {
+        console.log("Still alive?")
+    }
+}, 30000)
 
 app.on('close', async () => {
     client.destroy()
