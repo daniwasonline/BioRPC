@@ -12,7 +12,7 @@ const os = require('os')
 const RPC = require("discord-rpc")
 const { promisify } = require('util')
 const sleep = promisify(setTimeout)
-const find = require("find-process")
+const procExists = require("process-exists")
 const dialogs = require("dialog")
 const dialog = require("dialog")
 
@@ -254,163 +254,115 @@ if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
     }
 
     async function checkApp() {
-        if (await find('name', "Discord.exe") == []) return "BioRPC Control Centre"
-        if (!await find('name', "Discord.exe") == []) return "[DISCONNECTED] BioRPC"
-        if (await find('name', "DiscordCanary.exe") == []) return "BioRPC Control Centre"
-        if (!await find('name', "DiscordCanary.exe") == []) return "[DISCONNECTED] BioRPC"
-        if (await find('name', "DiscordPTB.exe") == []) return "BioRPC Control Centre"
-        if (!await find('name', "DiscordPTB.exe") == []) return "[DISCONNECTED] BioRPC"
+        if (await procExists("Discord.exe")) return "BioRPC Control Centre"
+        if (!await procExists("Discord.exe")) return "[DISCONNECTED] BioRPC"
+        if (await procExists("DiscordCanary.exe")) return "BioRPC Control Centre"
+        if (!await procExists("DiscordCanary.exe")) return "[DISCONNECTED] BioRPC"
+        if (await procExists("DiscordPTB.exe")) return "BioRPC Control Centre"
+        if (!await procExists("DiscordPTB.exe")) return "[DISCONNECTED] BioRPC"
     }
 
-    app.on('ready', async () => {
-        if (!os.platform == "win32") return dialogs.err("Oops! You're not using Windows. This program is designed for the Windows platform, and WILL NOT work on Linux or MacOS. Press OK to exit.", "BioRPC", function (exitCode) {
-            if (exitCode == 0) return app.quit()
-        })
+app.on('ready', async () => {
+    if (!os.platform == "win32") return dialogs.err("Oops! You're not using Windows. This program is designed for the Windows platform, and WILL NOT work on Linux or MacOS. Press OK to exit.", "BioRPC", function (exitCode) {
+        if (exitCode == 0) return app.quit()
+    })
 
-        async function tray() {
-            var contextMenu = Menu.buildFromTemplate([
-                {
-                    label: await checkApp(), enabled: false
-                },
-                {
-                    label: "Separator", type: "separator"
-                },
-                {
-                    label: 'Reconnect Status', click: function () {
-                        sleep(500).then(e => {
-                            client.clearActivity()
-                        })
-                        sleep(1500).then(e => {
-                            initTheReInit()
-                        })
-                    }
-                },
-                {
-                    label: 'Onboarding', click: function () {
-                        onboarding()
-                    }
-                },
-                {
-                    label: 'Edit Config', click: function () {
-                        app.isQuiting = false;
-                        shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
-
-                    }
-                },
-                {
-                    label: "Separator", type: "separator"
-                },
-                {
-                    label: "Documentation", click: function () {
-                        shell.openExternal("https://github.com/BeanedTaco/BioRPC/wiki")
-
-                    }
-                },
-                {
-                    label: await StartFunctions("name"), click: function () {
-                        StartFunctions("toggle")
-
-                    }
-                },
-                {
-                    label: 'Quit', click: function () {
-                        app.isQuiting = true;
-                        app.quit();
-                        process.exit()
-                    }
-                },
-            ]);
-            appIcon = null
-            appIcon = new Tray(iconpath)
-            appIcon.setContextMenu(contextMenu)
-            appIcon.setToolTip("BioRPC")
-            appIcon.setTitle("BioRPC Control Panel")
-        }
-
-        tray()
-        /*
-                setInterval(async function () {
-                    console.log("running check")
-                    if (appIcon == null) {
-                        console.log("null")
-                        return initTheReInit()
-                    }
-                    else if (appIcon.isDestroyed()) {
-                        console.log("destroyed")
-                        sleep(10000).then(e => {
-                            tray()
-                        })
-                    } else {
-                        console.log("nothing")
-                        return;
-                    }
-                }, 10800000)
-        */
-        const ready = async function () {
-
-                init();
-            
-        }
-//await yml.safeLoad(
-        try {
-            client.on('ready', ready)
-        }catch(e){
-            console.log("Oop! Discord's not open. Retrying in 15 seconds..")
-            return sleep(1000).then(e => {
-                console.log("15")
-                sleep(1000).then(e => {
-                    console.log("14")
-                    sleep(1000).then(e => {
-                        console.log("13")
-                        sleep(1000).then(e => {
-                            console.log("12")
-                            sleep(1000).then(e => {
-                                console.log("11")
-                                sleep(1000).then(e => {
-                                    console.log("10")
-                                    sleep(1000).then(e => {
-                                        console.log("9")
-                                        sleep(1000).then(e => {
-                                            console.log("8")
-                                            sleep(1000).then(e => {
-                                                console.log("7")
-                                                sleep(1000).then(e => {
-                                                    console.log("6")
-                                                    sleep(1000).then(e => {
-                                                        console.log("5")
-                                                        sleep(1000).then(e => {
-                                                            console.log("4")
-                                                            sleep(1000).then(e => {
-                                                                console.log("3")
-                                                                sleep(1000).then(e => {
-                                                                    console.log("2")
-                                                                    sleep(1000).then(e => {
-                                                                        console.log("1")
-                                                                        sleep(1000).then(e => {
-                                                                            console.log("Restarting..")
-                                                                            initTheReInit()
-                                                                        })
-                                                                    })
-                                                                })
-                                                            })
-                                                        })
-                                                    })
-                                                })
-                                            })
-                                        })
-                                    })
-                                })
-                            })
-                        })
+    async function tray() {
+        var contextMenu = Menu.buildFromTemplate([
+            {
+                label: await checkApp(), enabled: false
+            },
+            {
+                label: "Separator", type: "separator"
+            },
+            {
+                label: 'Reconnect Status', click: function () {
+                    sleep(500).then(e => {
+                        client.clearActivity()
                     })
-                })
+                    sleep(1500).then(e => {
+                        initTheReInit()
+                    })
+                }
+            },
+            {
+                label: 'Onboarding', click: function () {
+                    onboarding()
+                }
+            },
+            {
+                label: 'Edit Config', click: function () {
+                    app.isQuiting = false;
+                    shell.openExternal(app.getPath("home") + "\\.biorpc\\biorpc.yml")
+
+                }
+            },
+            {
+                label: "Separator", type: "separator"
+            },
+            {
+                label: "Documentation", click: function () {
+                    shell.openExternal("https://github.com/BeanedTaco/BioRPC/wiki")
+
+                }
+            },
+            {
+                label: await StartFunctions("name"), click: function () {
+                    StartFunctions("toggle")
+
+                }
+            },
+            {
+                label: 'Quit', click: function () {
+                    app.isQuiting = true;
+                    app.quit();
+                    process.exit()
+                }
+            },
+        ]);
+        appIcon = null
+        appIcon = new Tray(iconpath)
+        appIcon.setContextMenu(contextMenu)
+        appIcon.setToolTip("BioRPC")
+        appIcon.setTitle("BioRPC Control Panel")
+    }
+
+    tray()
+    /*
+            setInterval(async function () {
+                console.log("running check")
+                if (appIcon == null) {
+                    console.log("null")
+                    return initTheReInit()
+                }
+                else if (appIcon.isDestroyed()) {
+                    console.log("destroyed")
+                    sleep(10000).then(e => {
+                        tray()
+                    })
+                } else {
+                    console.log("nothing")
+                    return;
+                }
+            }, 10800000)
+    */
+    const ready = async function () {
+
+        init();
+            
+    }
+    //await yml.safeLoad(
+    try {
+        client.on("ready", ready)
+    } catch (e) {
+            sleep(15000).then(e => {
+                initTheReInit()
             })
         }
 
-
-        if (!await find('name', "Discord.exe") == []) {
-            if (!await find('name', "DiscordCanary.exe") == []) {
-                if (!await find('name', "DiscordPTB.exe") == []) {
+        if (!await procExists("Discord.exe")) {
+            if (!await procExists("DiscordCanary.exe")) {
+                if (!await procExists("DiscordPTB.exe")) {
                     console.log("Oop! Discord's not open. Retrying in 15 seconds..")
                     return sleep(1000).then(e => {
                         console.log("15")
@@ -471,14 +423,16 @@ if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
     
 
 client.login({ clientId }).catch(console.error);
+
 setInterval(async function () {
-    if (!await find('name', "Discord.exe") == []) return initTheReInit()
-    else if (!await find('name', "DiscordPTB.exe") == []) return initTheReInit()
-    else if (!await find('name', "DiscordCanary.exe") == []) return initTheReInit()
+    if (await procExists("Discord.exe")) return;
+    if (!await procExists("Discord.exe")) return initTheReInit()
+    else if (!await procExists("DiscordPTB.exe")) return initTheReInit()
+    else if (!await procExists("DiscordCanary.exe")) return initTheReInit()
     else {
         console.log("Still alive?")
     }
-}, 30000)
+}, 60000)
 
 app.on('close', async () => {
     client.destroy()
