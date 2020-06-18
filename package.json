@@ -1,8 +1,8 @@
 {
   "name": "biorpc",
-  "version": "2.3.0-b1",
+  "version": "3.0.0",
   "description": "A Rich Presence creator for Discord. Meant to be used with dsc.bio.",
-  "main": "main.js",
+  "main": "bootstrap.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,14 +11,21 @@
     "type": "git",
     "url": "https://github.com/BeanedTaco/BioRPC.git"
   },
-  "contributors": ["SaturdayNightDead"],
+  "contributors": [
+    "SaturdayNightDead"
+  ],
   "license": "MIT",
   "dependencies": {
-    "discord-rich-presence": "0.0.8",
+    "discord-rpc": "^3.1.1",
     "dialog": "^0.3.1",
     "js-yaml": "^3.14.0",
     "is-elevated": "^3.0.0",
-    "auto-launch": "^5.0.5"
+    "auto-launch": "^5.0.5",
+    "top-level-await": "^1.1.0",
+    "discord.bio": "^6.1.3"
+  },
+  "devDependencies": {
+    "electron": "^9.0.4"
   },
   "build": {
     "appId": "com.unicord.biorpc",

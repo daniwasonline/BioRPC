@@ -8,13 +8,16 @@
 
 // Load Electron modules
 const { app, BrowserWindow, BrowserView, globalShortcut, Menu, screen, MenuItem, ipcMain, Tray, shell } = require('electron')
-const os = require('os')
+const os = require('os') 
+const RPC = require("discord-rpc")
+const client = new RPC.Client({ transport: 'ipc' });
 const dialogs = require("dialog")
 const dialog = require("dialog")
 const fs = require("fs")
+const bio = new (require('discord.bio').Bio)
 const yml = require('js-yaml')
 const AutoLaunch = require("auto-launch")
-var rpc = require("discord-rich-presence")("623327828875935744")
+const clientId = "623327828875935744"
 const { promisify } = require('util')
 const sleep = promisify(setTimeout)
 const sudoer = require('is-elevated')
@@ -31,7 +34,7 @@ const path = require('path')
 const url = require('url')
 var iconpath = path.join(__dirname, 'icon.ico') // path of y
 
-function reInit() {
+async function reInit() {
     const { spawn } = require("child_process")
     delete process.env.process_restarting;
     spawn(process.argv[0], process.argv.slice(1), {
@@ -42,11 +45,12 @@ function reInit() {
 }
 
 
-function initReInit() {
+async function initReInit() {
     app.quit()
 }
 
-function initTheReInit() {
+async function initTheReInit() {
+    await client.destroy()
     reInit()
     sleep(500)
     initReInit()
@@ -86,145 +90,158 @@ async function onboarding() {
     })
 }
 
+if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
+    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
+    fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
+    })
+}
 
-app.on('ready', async () => {
-    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
-        if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
-        fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
+if (fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
+    const autolaunch_config = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
+    if (autolaunch_config.enabled == false) {
+        Startup.isEnabled().then(function (isEnabled) {
+            console.log("Startup: Disabled")
+            if (isEnabled) {
+                Startup.disable()
+            } if (!isEnabled) return;
+        })
+    } if (autolaunch_config.enabled == true) {
+        Startup.isEnabled().then(function (isEnabled) {
+            console.log("Startup: Enabled")
+            if (isEnabled) {
+                return;
+            } if (!isEnabled) Startup.enable()
         })
     }
+}
 
-    if (fs.existsSync(app.getPath("home") + "\\.biorpc\\autolaunch.yml")) {
-        const autolaunch_config = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
-        if (autolaunch_config.enabled == false) {
-            Startup.isEnabled().then(function (isEnabled) {
-                console.log("Startup: Disabled")
-                if (isEnabled) {
-                    Startup.disable()
-                } if (!isEnabled) return;
-            })
-        } if (autolaunch_config.enabled == true) {
-            Startup.isEnabled().then(function (isEnabled) {
-                console.log("Startup: Enabled")
-                if (isEnabled) {
-                    return;
-                } if (!isEnabled) Startup.enable()
-            })
+
+
+
+if (sudoer() == true) return dialogs.err("BioRPC can't run with sudoer [administrator/elevated] privileges. Try again without using administrator privileges.", "BioRPC", function (exitCode) {
+    if (exitCode == 0) return app.quit()
+})
+
+
+
+if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\biorpc.yml")) {
+    console.log("uhh")
+    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
+    sleep(5)
+    fs.writeFile(app.getPath("home") + '\\.biorpc\\biorpc.yml', 'details: Online # The top field, below the "dsc.bio status" thing\nbioUser: autoDetect # Example: By default, this is autoDetect. If BioRPC sees "autoDetect" or "BIO CUSTOM USERNAME HERE" as the value for this key, then it will automatically grab the user URL for the Discord account that has the status. If you need to add a custom dsc.bio user name, change the value from this to the correct user name. If you want to override the entire value of the state field [bioUser field], add csUrl://, followed by the custom value that you want it to be. \nlargeImage: discord # This is the large big image in the Rich Presence.\nsmallImage: discord # This is the small little image in the Rich Presence', function (e) {
+        if (e) console.log("ERR: " + e)
+        onboarding()
+    })
+    return;
+}
+
+var settings = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "biorpc.yml"))
+    
+if (settings.bioUser.includes("BIO CUSTOM USERNAME HERE")) {
+    fs.writeFile(app.getPath("home") + '\\.biorpc\\biorpc.yml', 'details: Online # The top field, below the "dsc.bio status" thing\nbioUser: autoDetect # Example: By default, this is autoDetect. If BioRPC sees "autoDetect" as the value for this key, then it will automatically grab the user URL for the Discord account that has the status. If you need to add a custom dsc.bio user name, change the value from this to the correct user name. If you want to override the entire value of the state field [bioUser field], add csUrl://, followed by the custom value that you want it to be. \nlargeImage: discord # This is the large big image in the Rich Presence.\nsmallImage: discord # This is the small little image in the Rich Presence', function (e) {
+        initTheReInit()
+    })
+}
+
+    async function checkForLarge() {
+        var myArgs = process.argv.slice(3)
+        if (settings.largeImage) return settings.largeImage
+    }
+    async function checkForSmall() {
+        var myArgs = process.argv.slice(4)
+        if (settings.smallImage) return settings.smallImage
+    }
+    
+    async function checkForBio() {
+        var myArgs = process.argv.slice(5)
+        if (settings.bioUser == "BIO CUSTOM USERNAME HERE") {
+            console.log("User ID: " + client.user.id)
+            var detailsKey = await (await bio.users.details(client.user.id)).user.details.slug
+            console.log("Default User: " + detailsKey)
+            return `Bio: dsc.bio/${detailsKey}`
+        }
+        if (settings.bioUser == "autoDetect") {
+            console.log("User ID: " + client.user.id)
+            var detailsKey = await (await bio.users.details(client.user.id)).user.details.slug
+            console.log("Default User: " + detailsKey)
+            return `Bio: dsc.bio/${detailsKey}`
+        }
+        if (settings.bioUser.startsWith("csurl://")) return settings.bioUser.replace("csurl://", "")
+        if (settings.bioUser) return `Bio: dsc.bio/${settings.bioUser}`
+    }
+    
+    async function largeProcess() {
+        if (settings.largeImage == "demon-tomioka") return "T o m i o k a"
+        if (settings.largeImage == "discord") return "Ey, Discord's logo! Hi, Wumpus!"
+        if (settings.largeImage == "jords_eye") return "Jord is always watching."
+        if (settings.largeImage == "osamu_dazai_flat") return "OSAMUUUUUU"
+        if (settings.largeImage == "sad_box") return "this is sad amazon box rip"
+        if (settings.largeImage == "skep") return "skeppu is a bald jif peanut butter"
+        if (settings.largeImage == "dazai-kun") return "AHHHHHHHH MORE OSAMUUUU"
+        if (settings.largeImage == "chibi-akutagawa") return "Oh, a cute anime character!"
+        if (settings.largeImage == "kermit") return "muppets"
+        if (settings.largeImage == "pedrald") return "Piraffe lmao"
+        if (settings.largeImage == "carpet") return "dog on carpet. aww!!!!"
+    }
+    async function smallProcess() {
+        if (settings.smallImage == "demon-tomioka") return "T o m i o k a"
+        if (settings.smallImage == "discord") return "Ey, Discord's logo! Hi, Wumpus!"
+        if (settings.smallImage == "jords_eye") return "Jord is always watching."
+        if (settings.smallImage == "osamu_dazai_flat") return "OSAMUUUUUU"
+        if (settings.smallImage == "sad_box") return "this is sad amazon box rip"
+        if (settings.smallImage == "skep") return "skeppu is a bald jif peanut butter"
+        if (settings.smallImage == "dazai-kun") return "AHHHHHHHH MORE OSAMUUUU"
+        if (settings.smallImage == "chibi-akutagawa") return "Oh, a cute anime character!"
+        if (settings.smallImage == "kermit") return "muppets"
+        if (settings.smallImage == "pedrald") return "Piraffe lmao"
+        if (settings.smallImage == "carpet") return "dog on carpet. aww!!!!"
+    }
+
+    async function StartFunctions(opt) {
+        const launchConf = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
+        if (opt == "name") {
+            if (launchConf.enabled == false) return "Enable Launch on Startup"
+            if (launchConf.enabled == true) return "Disable Launch on Startup"
+        } else if (opt == "toggle") {
+            if (launchConf.enabled == false) {
+                fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: true', function (e) {
+                })
+                initTheReInit()
+
+            }
+            if (launchConf.enabled == true) {
+                fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
+                })
+                initTheReInit()
+            }
         }
     }
     
-
-
-
-    if (sudoer() == true) return dialogs.err("BioRPC can't run with sudoer [administrator/elevated] privileges. Try again without using administrator privileges.", "BioRPC", function (exitCode) {
-        if (exitCode == 0) return app.quit()
-    })
-
-
-
-    if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\biorpc.yml")) {
-        console.log("uhh")
-        if (!fs.existsSync(app.getPath("home") + "\\.biorpc\\")) fs.mkdirSync(app.getPath("home") + "\\.biorpc\\")
-        sleep(5)
-        fs.writeFile(app.getPath("home") + '\\.biorpc\\biorpc.yml', 'details: Online\nbioUser: BIO CUSTOM USERNAME HERE # Example: Adding dannykun here would make the status "Bio: dsc.bio/dannykun".\nlargeImage: sad_box\nsmallImage: jords_eye', function (e) {
-            if (e) console.log("ERR: " + e)
-            onboarding()
-        })
-        
-        
-        
-        
-        return;
-        
-    } else if (fs.existsSync(app.getPath("home") + "\\.biorpc\\biorpc.yml")) {
-        const settings = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "biorpc.yml"))
-
-        async function checkForLarge() {
-            var myArgs = process.argv.slice(3)
-            if (settings.largeImage) return settings.largeImage
+    async function checkForDetails() {
+        if (settings.details) return settings.details
+    }
+    
+    async function init() {
+        try {
+            const rich = await client.setActivity({
+                state: await checkForBio(),
+                details: `${await checkForDetails()}`,
+                startTimestamp: Date.now(),
+                largeImageKey: `${await checkForLarge()}`,
+                smallImageKey: `${await checkForSmall()}`,
+                largeImageText: `${await largeProcess()}`,
+                smallImageText: `${await smallProcess()}`,
+                instance: true,
+            })
+            console.log("Logged into RPC successfully!")
+        } catch (e) {
+            console.log("Failed to apply RPC!")
+            console.log(`Error: ${e}`)
         }
-        async function checkForSmall() {
-            var myArgs = process.argv.slice(4)
-            if (settings.smallImage) return settings.smallImage
-        }
-        
-        async function checkForBio() {
-            var myArgs = process.argv.slice(5)
-            if (settings.bioUser == "BIO CUSTOM USERNAME HERE") return `No dsc.bio user entered`
-            if (settings.bioUser.startsWith("csurl://")) return settings.bioUser.replace("csurl://", "")
-            if (settings.bioUser) return `Bio: dsc.bio/${settings.bioUser}`
-        }
-        
-        async function largeProcess() {
-            if (settings.largeImage == "demon-tomioka") return "T o m i o k a"
-            if (settings.largeImage == "discord") return "Ey, Discord's logo! Hi, Wumpus!"
-            if (settings.largeImage == "jords_eye") return "Jord is always watching."
-            if (settings.largeImage == "osamu_dazai_flat") return "OSAMUUUUUU"
-            if (settings.largeImage == "sad_box") return "this is sad amazon box rip"
-            if (settings.largeImage == "skep") return "skeppu is a bald jif peanut butter"
-            if (settings.largeImage == "dazai-kun") return "AHHHHHHHH MORE OSAMUUUU"
-            if (settings.largeImage == "chibi-akutagawa") return "Oh, a cute anime character!"
-            if (settings.largeImage == "kermit") return "muppets"
-            if (settings.largeImage == "pedrald") return "Piraffe lmao"
-            if (settings.largeImage == "carpet") return "dog on carpet. aww!!!!"
-        }
-        async function smallProcess() {
-            if (settings.smallImage == "demon-tomioka") return "T o m i o k a"
-            if (settings.smallImage == "discord") return "Ey, Discord's logo! Hi, Wumpus!"
-            if (settings.smallImage == "jords_eye") return "Jord is always watching."
-            if (settings.smallImage == "osamu_dazai_flat") return "OSAMUUUUUU"
-            if (settings.smallImage == "sad_box") return "this is sad amazon box rip"
-            if (settings.smallImage == "skep") return "skeppu is a bald jif peanut butter"
-            if (settings.smallImage == "dazai-kun") return "AHHHHHHHH MORE OSAMUUUU"
-            if (settings.smallImage == "chibi-akutagawa") return "Oh, a cute anime character!"
-            if (settings.smallImage == "kermit") return "muppets"
-            if (settings.smallImage == "pedrald") return "Piraffe lmao"
-            if (settings.smallImage == "carpet") return "dog on carpet. aww!!!!"
-        }
-        
+    }
 
-        async function StartFunctions(opt) {
-            const launchConf = await yml.safeLoad(fs.readFileSync(app.getPath("home") + "\\.biorpc\\" + "autolaunch.yml"))
-            if (opt == "name") {
-                if (launchConf.enabled == false) return "Enable Launch on Startup"
-                if (launchConf.enabled == true) return "Disable Launch on Startup"
-            } else if (opt == "toggle") {
-                if (launchConf.enabled == false) {
-                    fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: true', function (e) {
-                    })
-                    initTheReInit()
 
-                }
-                if (launchConf.enabled == true) {
-                    fs.writeFile(app.getPath("home") + '\\.biorpc\\autolaunch.yml', 'enabled: false', function (e) {
-                    })
-                    initTheReInit()
-                }
-            }
-        }
-        
-        async function checkForDetails() {
-            if (settings.details) return settings.details
-        }
-        
-        async function init() {
-            try {
-                const rich = await rpc.updatePresence({
-                    state: await checkForBio(),
-                    details: `${await checkForDetails()}`,
-                    startTimestamp: Date.now(),
-                    largeImageKey: `${await checkForLarge()}`,
-                    smallImageKey: `${await checkForSmall()}`,
-                    largeImageText: `${await largeProcess()}`,
-                    smallImageText: `${await smallProcess()}`,
-                    instance: true,
-                })
-                console.log("Logged into RPC successfully!")
-            } catch (e) {
-                console.log("Failed to apply RPC!")
-                console.log(`Error: ${e}`)
-            }
-        }
+    app.on('ready', async () => {
 
         async function tray() {
             var contextMenu = Menu.buildFromTemplate([
@@ -236,9 +253,12 @@ app.on('ready', async () => {
                 },
                 {
                     label: 'Reconnect Status', click: function () {
-                        app.isQuiting = false;
-                        initTheReInit()
-
+                        sleep(500).then(e => {
+                            client.clearActivity()
+                        })
+                        sleep(1500).then(e => {
+                            initTheReInit()
+                        })
                     }
                 },
                 {
@@ -284,41 +304,35 @@ app.on('ready', async () => {
         }
 
         tray()
-/*
-        setInterval(async function () {
-            console.log("running check")
-            if (appIcon == null) {
-                console.log("null")
-                return initTheReInit()
-            }
-            else if (appIcon.isDestroyed()) {
-                console.log("destroyed")
-                sleep(10000).then(e => {
-                    tray()
-                })
-            } else {
-                console.log("nothing")
-                return;
-            }
-        }, 10800000)
-*/
-
-        try {
-            init()
-        } catch (e) {
-            console.log("Nope! Couldn't connect.")
-        }
+        /*
+                setInterval(async function () {
+                    console.log("running check")
+                    if (appIcon == null) {
+                        console.log("null")
+                        return initTheReInit()
+                    }
+                    else if (appIcon.isDestroyed()) {
+                        console.log("destroyed")
+                        sleep(10000).then(e => {
+                            tray()
+                        })
+                    } else {
+                        console.log("nothing")
+                        return;
+                    }
+                }, 10800000)
+        */
+    const ready = async function () {
+        init();
     }
-
-
-
 //await yml.safeLoad(
-
-    
+    client.on('ready', ready)
 });
 
+client.login({ clientId }).catch(console.error);
 
 app.on('close', async () => {
+    client.destroy()
     appIcon.destroy()
     app.quit()
     process.exit()
