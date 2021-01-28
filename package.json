@@ -26,7 +26,7 @@
     "process-exists": "^4.0.0"
   },
   "devDependencies": {
-    "electron": "^9.0.4"
+    "electron": "^9.4.0"
   },
   "build": {
     "appId": "com.unicord.biorpc",
